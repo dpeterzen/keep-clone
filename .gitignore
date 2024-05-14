@@ -1,0 +1,45 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore build output
+/dist/
+/tmp/
+/out-tsc/
+
+# Ignore log files
+*.log
+
+# Ignore environment files
+/src/environments/*.ts
+
+# Ignore any generated files
+*.js
+*.js.map
+*.css
+*.html
+*.png
+*.svg
+*.jpg
+*.jpeg
+
+# Ignore any editor/IDE specific files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore npm lock file
+package-lock.json
+
+# Ignore Angular generated testing files
+/*.js
+/*.js.map
+
+# Ignore compiled typescript types
+/*.d.ts
+
+# Ignore any dependencies installed via npm
+npm-debug.log*
+
+# Ignore coverage reports
+/coverage/
