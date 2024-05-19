@@ -44,3 +44,82 @@
 
 ## Other Notes
 - click a magic/fireworks button - ingests your note and transforms into a better formatted item
+
+
+## Roadmap Skeleton
+Step 1: Set Up Azure Cosmos DB
+
+Create Cosmos DB Account:
+    - Set up a new Azure Cosmos DB account in the Azure portal if you haven't already.
+    - Choose the appropriate API (e.g., SQL API for document data model).
+
+Create Users Container:
+    - Within your Cosmos DB account, create a container to store user documents.
+    - Define the partition key and throughput settings as per your requirements.
+
+Step 2: Backend Implementation
+
+Express Server Setup:
+    - Create an Express server to handle authentication requests.
+    - Set up routes for user registration and login.
+
+Implement User Registration:
+    - Create a route to handle user registration.
+    - Validate user input (e.g., username, password).
+    - Hash the password using bcrypt before storing it in the database.
+    - Insert the user document into the Cosmos DB users container.
+
+Implement User Login:
+    - Create a route to handle user login.
+    - Validate user credentials (username/password).
+    - Compare the hashed password with the stored hash in the database.
+    - Generate a JSON Web Token (JWT) upon successful authentication.
+
+Secure Routes with JWT Authentication Middleware:
+    - Implement middleware to verify JWT tokens for protected routes.
+    - Restrict access to routes requiring authentication.
+
+Step 3: Frontend Implementation
+
+Create Signup Form Component:
+    - Design and implement a signup form component using Angular Reactive Forms.
+    - Capture user input for username, email, and password.
+
+Implement Signup Service:
+    - Create a service to interact with the backend API for user registration.
+    - Handle HTTP requests (POST) to the backend endpoint.
+
+Create Login Form Component:
+    - Design and implement a login form component using Angular Reactive Forms.
+    - Capture user input for username and password.
+
+Implement Login Service:
+    - Create a service to interact with the backend API for user login.
+    - Handle HTTP requests (POST) to the backend endpoint.
+    - Store the JWT token in the browser's local storage upon successful login.
+
+Step 4: Integration and Testing
+
+Integrate Backend with Frontend:
+    - Connect the frontend signup and login components with the corresponding backend services.
+    - Implement error handling and display appropriate messages to the user.
+
+Test User Registration and Login:
+    - Test the signup and login workflows to ensure they function as expected.
+    - Verify that user data is stored in the Cosmos DB users container.
+    - Confirm that JWT tokens are generated and stored correctly.
+
+Refactor and Optimize Code:
+    - Review the codebase for any potential improvements or optimizations.
+    - Ensure code follows best practices and standards.
+
+Step 5: Documentation and Deployment
+
+Write Documentation:
+    - Document the authentication workflow, including API endpoints and frontend components.
+    - Provide instructions for developers on how to set up and run the application.
+
+Deploy Backend and Frontend:
+    - Deploy the Express backend to Azure App Service or any other hosting platform.
+    - Deploy the Angular frontend to Azure Static Web Apps or a similar service.
+    - Configure environment variables and ensure the application runs smoothly in the production environment.

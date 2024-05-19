@@ -5,6 +5,7 @@
 ```
 {
   "id": "user1",
+  "entityType": "user",
   "username": "exampleuser",
   "passwordHash": "$2b$10$EIX/hzHj.j0R2kR8xEixAe0cU/OPaJlf6f5c6FnQy/oeT2G4f4.AW", // hashed password
   "email": "user@example.com"
@@ -15,6 +16,7 @@
 ```
 {
   "id": "note1",
+  "entityType": "note",
   "userId": "user1",
   "title": "First Note",
   "content": "This is the content of the first note.",
