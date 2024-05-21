@@ -123,3 +123,80 @@ Deploy Backend and Frontend:
     - Deploy the Express backend to Azure App Service or any other hosting platform.
     - Deploy the Angular frontend to Azure Static Web Apps or a similar service.
     - Configure environment variables and ensure the application runs smoothly in the production environment.
+
+# 5/20
+
+## Additional Security Measures
+
+Input Validation:
+    - It's important to validate and sanitize the input to prevent SQL Injection-like attacks or other forms of input-based attacks, even though Cosmos DB is NoSQL. You can use libraries like express-validator to validate and sanitize inputs easily.
+
+```
+const { body, validationResult } = require('express-validator');
+
+// Example of adding validation middleware to your routes
+router.post('/register', [
+    body('username').isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
+    body('email').isEmail().withMessage('Invalid email address'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    // Your existing code...
+});
+```
+
+Rate Limiting:
+    - Protect your routes against brute-force attacks by adding rate limiting. You can use packages like express-rate-limit.
+
+```
+const rateLimit = require('express-rate-limit');
+
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // limit each IP to 5 login requests per windowMs
+    message: 'Too many login attempts from this IP, please try again after 15 minutes'
+});
+
+router.post('/login', loginLimiter, async (req, res) => {
+    // Your existing code...
+});
+```
+Enhanced Token Management:
+    - Consider adding token refresh capabilities and logout functionality by managing a token list or using a more sophisticated approach like using refresh and access tokens.
+
+
+# 5/21
+
+### Express Server Setup
+
+    - Create an Express server to handle authentication requests: Yes, you've set up an Express server in your app.js file and configured it to listen on a specified port.
+    Set up routes for user registration and login: Yes, you've created routes in your userRoutes.js file to handle user registration and login.
+
+### Implement User Registration
+
+    - Create a route to handle user registration: Yes, you have a /register route in your userRoutes.js that handles user registration.
+    Validate user input (e.g., username, password): You are checking if the username, email, and password are provided. For more robust validation (e.g., checking the format of the email, the complexity of the password), consider using a library like express-validator.
+    Hash the password using bcrypt before storing it in the database: Yes, you are using bcrypt to hash the password before it's stored in the database.
+    Insert the user document into the Cosmos DB users container: You mentioned a single "Items" container that you're using for both users and notes, identified by an entityType. Your setup correctly inserts user documents with entityType: 'user'.
+
+### Implement User Login
+
+    - Create a route to handle user login: Yes, you have a /login route in your userRoutes.js that handles user login.
+    Validate user credentials (username/password): You check if the email and password are provided and validate these credentials against stored data. It's recommended to ensure you're also checking if the user document fetched actually corresponds to a user (check entityType).
+    Compare the hashed password with the stored hash in the database: Yes, you're using bcrypt's compare function to validate the password against the stored hash.
+    Generate a JSON Web Token (JWT) upon successful authentication: Yes, you generate a JWT when the user successfully logs in, which includes the user's ID and email, and you set an expiration for the token.
+
+### Summary and Recommendations
+
+You have effectively set up the essential parts of user registration and login using Express and Cosmos DB. Here are a few recommendations to enhance your implementation:
+
+    - Improve Input Validation: Use express-validator to add more comprehensive checks on user inputs, such as ensuring the email format is correct, the password meets certain security criteria (length, complexity), and potentially sanitizing inputs to prevent injection attacks.
+
+    - Enhance Error Handling: Provide more informative error responses and ensure that errors from the database operations are caught and handled gracefully.
+
+    - Secure JWT Usage: Make sure that the JWT secret is securely managed and consider implementing mechanisms to handle token expiration and renewal securely.
+
+    - Review and Test: Thoroughly test all endpoints with different scenarios including edge cases, such as invalid inputs, duplicate emails, and incorrect passwords to ensure your application handles all possible states gracefully.
