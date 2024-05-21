@@ -23,6 +23,33 @@ async function getUserByEmail(email) {
     return resources[0];
 }
 
+async function updateUser(email, updates) {
+    const container = await getContainer();
+    try {
+        const { resource: user } = await container.item(email, 'user').read(); // Here 'user' should be the partition key value if 'entityType' is the partition key
+        if (!user) {
+            console.log("User not found");
+            return;
+        }
+        const updatedUser = { ...user, ...updates };
+        await container.item(email, 'user').replace(updatedUser); // Ensure correct partition key usage
+        console.log("User updated:", updatedUser);
+        return updatedUser;
+    } catch (error) {
+        console.error("Error updating user:", error);
+        throw error;
+    }
+}
+
+async function deleteUser(email) {
+    const container = await getContainer();
+    const user = await getUserByEmail(email);
+    if (!user) {
+        return null; // or handle as you see fit
+    }
+    await container.item(email, user.entityType).delete();  // Correctly reference the partition key
+}
+
 async function createNote(noteData) {
     const container = await getContainer();
     const { userId, title, content, createdAt, tags } = noteData;
@@ -38,4 +65,4 @@ async function createNote(noteData) {
     await container.items.create(note);
 }
 
-module.exports = { createUser, getUserByEmail, createNote };
+module.exports = { createUser, getUserByEmail, updateUser, deleteUser, createNote };
