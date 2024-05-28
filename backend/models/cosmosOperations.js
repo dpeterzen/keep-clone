@@ -1,15 +1,24 @@
 const { getContainer } = require('../cosmosConfig'); // Adjust path as needed
 const { v4: uuidv4 } = require('uuid');
 
-async function createUser(userData) {
+async function createUserIfNotExists(userData) {
     const container = await getContainer();
-    const { username, email, passwordHash } = userData;
+    const { resources: existingUsers } = await container.items
+        .query({
+            query: "SELECT * FROM c WHERE c.email = @email",
+            parameters: [{ name: "@email", value: userData.email }]
+        })
+        .fetchAll();
+
+    if (existingUsers.length > 0) {
+        console.log('User already exists');
+        return;
+    }
+
     const user = {
-        id: email,  // Using email as the unique ID
-        entityType: 'user',
-        username,
-        passwordHash,
-        email
+        ...userData,
+        id: userData.email, // Use email as ID, ensure it's unique
+        entityType: 'user'
     };
     await container.items.create(user);
 }
