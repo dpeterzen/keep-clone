@@ -2,25 +2,8 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { createUser, getUserByEmail } = require('../models/cosmosOperations'); // Adjust the path as necessary
-
-// Middleware to verify the token
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];  // Bearer TOKEN_STRING
-
-    if (token == null) {
-        return res.sendStatus(401);  // No token provided
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.sendStatus(403);  // Invalid token
-        }
-        req.user = user;
-        next();  // proceed to the next middleware or route handler
-    });
-};
+const { createUser, getUserByEmail } = require('../models/cosmosOperations');
+const authenticateToken = require('../middleware/authenticate');
 
 // Register route
 router.post('/register', async (req, res) => {
@@ -59,14 +42,11 @@ router.post('/login', async (req, res) => {
 });
 
 // Get user profile
-// Provide users the ability to view their profile details after logging in. This route enhances user functionality by
-// allowing them to access their profile information securely, leveraging the authentication middleware.
 router.get('/profile', authenticateToken, async (req, res) => {
     try {
         const user = await getUserByEmail(req.user.email);
         if (!user) return res.status(404).send({ message: 'User not found.' });
 
-        // Optionally clean up the user object here if necessary
         const { passwordHash, ...userWithoutSensitiveInfo } = user;
         res.status(200).send(userWithoutSensitiveInfo);
     } catch (error) {
