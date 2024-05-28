@@ -1,4 +1,4 @@
-const { createUser, getUserByEmail, updateUser, deleteUser } = require('./models/cosmosOperations'); // Adjust the path as necessary
+const { createUserIfNotExists, getUserByEmail, updateUser, deleteUser } = require('./models/cosmosOperations'); // Adjust the path as necessary
 require('dotenv').config(); // Ensures your environment variables are loaded
 
 console.log("Cosmos DB Endpoint:", process.env.COSMOS_DB_ENDPOINT);
@@ -18,32 +18,37 @@ async function testCRUDOperations() {
     // Create
     console.log("Creating user...");
     try {
-        await createUser(dummyUser);
+        await createUserIfNotExists(dummyUser);
         console.log("User created:", dummyUser);
     } catch (error) {
         console.error("Error during creation:", error.message);
     }
-
     // Read
     console.log("Retrieving user...");
     const fetchedUser = await getUserByEmail(dummyUser.email);
     console.log("User retrieved:", fetchedUser);
 
     // Update
-    console.log("Updating user...");
-    const updatedUser = await updateUser(dummyUser.email, { username: "updatedTestUser" });
-    console.log("User updated:", updatedUser);
+    console.log("Updating user with ID:", dummyUser.email);
+    try {
+        const updatedUser = await updateUser(dummyUser.email, { username: "updatedTestUser" });
+        if (updatedUser) {
+            console.log("User updated:", updatedUser);
+        } else {
+            console.log("User not found or update failed");
+        }
+    } catch (error) {
+        console.error("Error during update:", error.message);
+    }
 
-    // Cleanup - Delete
-    console.log("Deleting user...");
+    // Delete
+    console.log("Deleting user with ID:", dummyUser.email);
     try {
         await deleteUser(dummyUser.email);
         console.log("User deleted");
     } catch (error) {
         console.error("Error during deletion:", error.message);
     }
-
-    console.log("CRUD operations test completed.");
 }
 
 testCRUDOperations().catch(err => {
