@@ -1,4 +1,5 @@
 const { getContainer } = require('../cosmosConfig'); // Adjust path as needed
+const { v4: uuidv4 } = require('uuid');
 
 async function createUser(userData) {
     const container = await getContainer();
@@ -52,17 +53,70 @@ async function deleteUser(email) {
 
 async function createNote(noteData) {
     const container = await getContainer();
-    const { userId, title, content, createdAt, tags } = noteData;
+    if (!noteData.userId) {
+        throw new Error("userId must be provided for note creation");
+    }
     const note = {
-        id: `note${new Date().getTime()}`, // Generating unique IDs for notes
-        entityType: 'note',
-        userId,
-        title,
-        content,
-        createdAt,
-        tags
+        ...noteData,
+        id: uuidv4(), // Assign a unique UUID
+        entityType: 'note' // Ensure partition key is set correctly
     };
     await container.items.create(note);
 }
 
-module.exports = { createUser, getUserByEmail, updateUser, deleteUser, createNote };
+async function getNoteById(noteId) {
+    const container = await getContainer();
+    try {
+        const { resource: note } = await container.item(noteId, 'note').read(); // 'note' as partition key value
+        return note;
+    } catch (error) {
+        console.error('Error fetching note by ID:', error);
+        return null; // Handle error appropriately
+    }
+}
+
+async function updateNote(noteId, updates) {
+    const container = await getContainer();
+    try {
+        const { resource: existingNote } = await container.item(noteId, 'note').read();
+        const updatedNote = { ...existingNote, ...updates };
+        await container.item(noteId, 'note').replace(updatedNote);
+        return updatedNote;
+    } catch (error) {
+        console.error('Error updating note:', error);
+        return null; // Handle error appropriately
+    }
+}
+
+async function deleteNote(noteId) {
+    const container = await getContainer();
+    try {
+        await container.item(noteId, 'note').delete();
+    } catch (error) {
+        console.error('Error deleting note:', error);
+    }
+}
+
+async function getNotesByUser(userId) {
+    const container = await getContainer();
+    const querySpec = {
+        query: "SELECT * FROM c WHERE c.userId = @userId AND c.entityType = 'note'",
+        parameters: [
+            { name: "@userId", value: userId }
+        ]
+    };
+    const { resources } = await container.items.query(querySpec).fetchAll();
+    return resources;
+}
+
+module.exports = {
+    createUser,
+    getUserByEmail,
+    updateUser,
+    deleteUser,
+    createNote,
+    getNoteById,
+    updateNote,
+    deleteNote,
+    getNotesByUser
+};
