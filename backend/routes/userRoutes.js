@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { createUserIfNotExists, getUserByEmail } = require('../models/cosmosOperations');
 const authenticateToken = require('../middleware/authenticate');
+const { generateToken } = require('../services/authService');
 
 // Register route
 router.post('/register', async (req, res) => {
@@ -47,7 +48,7 @@ router.post('/login', async (req, res) => {
         if (!match) {
             return res.status(401).send({ message: 'Invalid credentials.' });
         }
-        const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        const token = generateToken(user);
         res.status(200).send({ token, message: 'Logged in successfully.' });
     } catch (error) {
         res.status(500).send({ message: 'Error logging in.', error: error.message });
