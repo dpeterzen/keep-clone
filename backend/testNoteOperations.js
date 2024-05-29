@@ -7,7 +7,7 @@ console.log("Cosmos DB Key:", process.env.COSMOS_DB_KEY);
 // Define a dummy note without an ID
 const dummyNote = {
     entityType: "note",
-    userId: "user1",
+    userId: "user1@email.neenja",
     title: "First Note",
     content: "This is the content of the first note.",
     createdAt: new Date().toISOString(),

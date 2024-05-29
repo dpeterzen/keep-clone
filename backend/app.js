@@ -4,22 +4,38 @@ const { CosmosClient } = require('@azure/cosmos');
 
 require('dotenv').config();
 
+console.log("Cosmos DB Endpoint:", process.env.COSMOS_DB_ENDPOINT);
+console.log("Cosmos DB Key:", process.env.COSMOS_DB_KEY);
+
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-// Import user routes
-const userRoutes = require('./routes/userRoutes'); // Adjust the path as necessary
+// Import routes
+const userRoutes = require('./routes/userRoutes'); // Ensure this path is correct
+const noteRoutes = require('./routes/noteRoutes'); // Ensure this path is correct
 
-// Setup Cosmos DB Client
-const client = new CosmosClient(process.env.COSMOS_DB_CONNECTION_STRING);
-const database = client.database('KeepCloneDB');
-const itemsContainer = database.container('Items'); // Using a single container for both users and notes
+// Check and setup Cosmos DB Client
+if (!process.env.COSMOS_DB_ENDPOINT || !process.env.COSMOS_DB_KEY) {
+    console.error("Cosmos DB endpoint or key is not set. Please check your environment variables.");
+    process.exit(1); // Exit the process with an error code
+} else {
+    const client = new CosmosClient({
+        endpoint: process.env.COSMOS_DB_ENDPOINT,
+        key: process.env.COSMOS_DB_KEY
+    });
+    const database = client.database('KeepCloneDB');
+    const itemsContainer = database.container('Items'); // Using a single container for both users and notes
 
-// Use User Routes
-app.use('/api/users', userRoutes);
+    // Ensure client and containers are accessible in routes if necessary
+    app.locals.itemsContainer = itemsContainer;
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+    // Use Routes
+    app.use('/api/users', userRoutes);
+    app.use('/api/notes', noteRoutes);
+
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+}
