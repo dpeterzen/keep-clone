@@ -12,11 +12,12 @@ router.post('/notes', async (req, res) => {
         title: req.body.title,
         content: req.body.content, // This could include text, links, images, etc.
         createdAt: new Date().toISOString(),  // Optionally set creation date here
-        tags: req.body.tags  // Assuming tags are included in the request
+        tags: req.body.tags,  // Assuming tags are included in the request
+        entityType: 'note'  // Explicitly setting the entityType to 'note'
     };
     try {
-        await createNote(newNote);
-        res.status(201).send({ message: 'Note created successfully', data: newNote });
+        const createdNote = await createNote(newNote);  // It's a good practice to return the created note
+        res.status(201).send({ message: 'Note created successfully', data: createdNote });
     } catch (error) {
         res.status(500).send({ message: 'Failed to create note', error: error.message });
     }
