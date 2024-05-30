@@ -1,0 +1,3 @@
+postman req on each endpoint
+test each route manually with postman (set up automation?)
+organize postman reqs for all routes
