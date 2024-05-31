@@ -46,10 +46,10 @@ async function updateUser(userId, updates) {
     }
 }
 
-async function deleteUser(userId) {
+async function deleteUser(email) {
     const container = await getContainer();
     try {
-        await container.item(userId).delete();
+        await container.item(email).delete();
     } catch (error) {
         console.error('Error deleting user:', error);
     }
