@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { createUserIfNotExists, getUserByEmail } = require('../models/cosmosOperations');
+const { createUserIfNotExists, getUserByEmail, deleteUser } = require('../models/cosmosOperations');
 const authenticateToken = require('../middleware/authenticate');
 const { generateToken } = require('../services/authService');
 
@@ -69,8 +69,8 @@ router.get('/profile', authenticateToken, async (req, res) => {
 });
 
 // Delete user
-router.delete('/users/:email', authenticateToken, async (req, res) => {
-    const email = req.params.email;
+router.delete('/destroy', authenticateToken, async (req, res) => {
+    const { email } = req.params.email;
 
     try {
         // First, find the user to ensure they exist and to get their ID (which is their email)
@@ -80,7 +80,7 @@ router.delete('/users/:email', authenticateToken, async (req, res) => {
         }
 
         // Proceed to delete the user using their email as ID
-        await deleteUser(user.id);  // user.id is the email in this setup
+        await deleteUser(user.email);  // user.id is the email in this setup
         res.status(200).send({ message: 'User deleted successfully.' });
     } catch (error) {
         res.status(500).send({ message: 'Error deleting user', error: error.message });
