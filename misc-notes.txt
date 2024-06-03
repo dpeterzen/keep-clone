@@ -1,5 +1,5 @@
 API endpoint testing:
 
 - test each route manually with postman
-- organize postman reqs for all routes in local folder
+- organize postman requests for all routes in local folder
 - ensure you receive status 200 for each

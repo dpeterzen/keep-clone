@@ -13,6 +13,7 @@ const authenticateToken = (req, res, next) => {
         if (err) {
             return res.sendStatus(403);  // Invalid token
         }
+        console.log("user:", user);
         req.user = user;
         next();  // Proceed to the next middleware or route handler
     });
