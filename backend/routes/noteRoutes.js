@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createNote, getNoteById, updateNote, deleteNote } = require('../models/cosmosOperations');
+const { getNotesByUser, createNote, getNoteById, updateNote, deleteNote } = require('../models/cosmosOperations');
 const authenticate = require('../middleware/authenticate');
 
 router.use(authenticate);  // Apply authentication middleware to all note routes
@@ -61,5 +61,21 @@ router.delete('/:id', async (req, res) => {
         res.status(500).send({ message: 'Error deleting note', error: error.message });
     }
 });
+
+// Route to get all notes for the logged-in user
+router.get('/', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.email;  // Extract userId from decoded JWT token added by the authenticate middleware
+        const notes = await getNotesByUser(userId);
+        if (notes.length === 0) {
+            res.status(404).send({ message: 'No notes found for this user.' });
+        } else {
+            res.status(200).send(notes);
+        }
+    } catch (error) {
+        res.status(500).send({ message: 'Error retrieving notes', error: error.toString() });
+    }
+});
+
 
 module.exports = router;
