@@ -68,13 +68,14 @@ async function createNote(noteData) {
 
 async function getNoteById(noteId) {
     const container = await getContainer();
-    try {
-        const { resource: note } = await container.item(noteId).read();
-        return note;
-    } catch (error) {
-        console.error('Error fetching note by ID:', error);
-        return null;
-    }
+    const querySpec = {
+        query: "SELECT * FROM c WHERE c.id = @id AND c.entityType = 'note'",
+        parameters: [
+            { name: "@id", value: noteId }
+        ]
+    };
+    const { resources } = await container.items.query(querySpec).fetchAll();
+    return resources[0];  // Return the first item if found
 }
 
 async function updateNote(noteId, updates) {
