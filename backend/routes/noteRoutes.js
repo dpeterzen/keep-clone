@@ -52,10 +52,13 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// Delete a note
-router.delete('/:id', async (req, res) => {
+// Delete note(s) by ids
+router.delete('/', async (req, res) => {
+    const uuidsList = req.body.ids;
     try {
-        await deleteNote(req.params.id, req.user.userId);
+        for (const id of uuidsList) {
+            await deleteNote(id);
+        }
         res.status(204).send();
     } catch (error) {
         res.status(500).send({ message: 'Error deleting note', error: error.message });
