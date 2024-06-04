@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { getNotesByUser, createNote, getNoteById, updateNote, deleteNote } = require('../models/cosmosOperations');
-const authenticate = require('../middleware/authenticate');
+const authenticateToken = require('../middleware/authenticate');
 
-router.use(authenticate);  // Apply authentication middleware to all note routes
+router.use(authenticateToken);  // Apply authentication middleware to all note routes
 
 // Create a new note
 router.post('/', async (req, res) => {
@@ -23,11 +23,15 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Retrieve a note
+// Get note by id 
 router.get('/:id', async (req, res) => {
-    console.log("Requested note ID:", req.params.id);
     try {
+        const userId = req.user.email;  // Extract userId from decoded JWT token added by the authenticate middleware
+
         const note = await getNoteById(req.params.id);
+        // check if req.user.email = note's userId
+        // if not, return unauthorized status
+        // else, return status 200 with the data
         if (!note) {
             res.status(404).send({ message: 'Note not found' });
         } else {
@@ -35,6 +39,21 @@ router.get('/:id', async (req, res) => {
         }
     } catch (error) {
         res.status(500).send({ message: 'Error retrieving note', error: error.toString() });
+    }
+});
+
+// Get all notes for the logged-in user
+router.get('/', async (req, res) => {
+    try {
+        const userId = req.user.email;  // Extract userId from decoded JWT token added by the authenticate middleware
+        const notes = await getNotesByUser(userId);
+        if (notes.length === 0) {
+            res.status(404).send({ message: 'No notes found for this user.' });
+        } else {
+            res.status(200).send(notes);
+        }
+    } catch (error) {
+        res.status(500).send({ message: 'Error retrieving notes', error: error.toString() });
     }
 });
 
@@ -64,21 +83,5 @@ router.delete('/', async (req, res) => {
         res.status(500).send({ message: 'Error deleting note', error: error.message });
     }
 });
-
-// Route to get all notes for the logged-in user
-router.get('/', authenticate, async (req, res) => {
-    try {
-        const userId = req.user.email;  // Extract userId from decoded JWT token added by the authenticate middleware
-        const notes = await getNotesByUser(userId);
-        if (notes.length === 0) {
-            res.status(404).send({ message: 'No notes found for this user.' });
-        } else {
-            res.status(200).send(notes);
-        }
-    } catch (error) {
-        res.status(500).send({ message: 'Error retrieving notes', error: error.toString() });
-    }
-});
-
 
 module.exports = router;
