@@ -6,9 +6,9 @@ const authenticate = require('../middleware/authenticate');
 router.use(authenticate);  // Apply authentication middleware to all note routes
 
 // Create a new note
-router.post('/notes', async (req, res) => {
+router.post('/', async (req, res) => {
     const newNote = {
-        userId: req.user.userId,  // Assuming this is added by your authentication middleware
+        userId: req.user.email,  // Assuming this is added by your authentication middleware
         title: req.body.title,
         content: req.body.content, // This could include text, links, images, etc.
         createdAt: new Date().toISOString(),  // Optionally set creation date here
@@ -24,7 +24,8 @@ router.post('/notes', async (req, res) => {
 });
 
 // Retrieve a note
-router.get('/notes/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
+    console.log("Requested note ID:", req.params.id);
     try {
         const note = await getNoteById(req.params.id);
         if (!note) {
@@ -38,7 +39,7 @@ router.get('/notes/:id', async (req, res) => {
 });
 
 // Update a note
-router.put('/notes/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
     try {
         const updatedNote = await updateNote(req.params.id, req.user.userId, req.body);
         if (!updatedNote) {
@@ -52,7 +53,7 @@ router.put('/notes/:id', async (req, res) => {
 });
 
 // Delete a note
-router.delete('/notes/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
         await deleteNote(req.params.id, req.user.userId);
         res.status(204).send();
