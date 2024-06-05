@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getNotesByUser, createNote, getNoteById, updateNote, deleteNote } = require('../models/cosmosOperations');
+const { getNotesByUser, createNote, getNoteById, updateNote, deleteNoteIfOwner } = require('../models/cosmosOperations');
 const authenticateToken = require('../middleware/authenticate');
 
 router.use(authenticateToken);  // Apply authentication middleware to all note routes
@@ -23,20 +23,19 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Get note by id 
+// Retrieve a specific note by ID
 router.get('/:id', async (req, res) => {
     try {
-        const userId = req.user.email;  // Extract userId from decoded JWT token added by the authenticate middleware
-
         const note = await getNoteById(req.params.id);
-        // check if req.user.email = note's userId
-        // if not, return unauthorized status
-        // else, return status 200 with the data
         if (!note) {
-            res.status(404).send({ message: 'Note not found' });
-        } else {
-            res.status(200).send(note);
+            return res.status(404).send({ message: 'Note not found' });
         }
+        // Check if the logged-in user's userId matches the note's userId
+        if (note.userId !== req.user.email) {
+            return res.status(403).send({ message: 'Access denied' });
+        }
+
+        res.status(200).send(note);
     } catch (error) {
         res.status(500).send({ message: 'Error retrieving note', error: error.toString() });
     }
@@ -60,11 +59,23 @@ router.get('/', async (req, res) => {
 // Update a note
 router.put('/:id', async (req, res) => {
     try {
-        const updatedNote = await updateNote(req.params.id, req.user.userId, req.body);
+        // First, verify the note exists
+        const note = await getNoteById(req.params.id);
+        if (!note) {
+            return res.status(404).send({ message: 'Note not found' });
+        }
+
+        // Check if the logged-in user's userId matches the note's userId
+        if (note.userId !== req.user.email) {
+            return res.status(403).send({ message: 'Access denied' });
+        }
+
+        // If ownership is confirmed, proceed to update the note
+        const updatedNote = await updateNote(req.params.id, req.body);
         if (!updatedNote) {
-            res.status(404).send({ message: 'Failed to update note' });
+            return res.status(404).send({ message: 'Failed to update note' });
         } else {
-            res.status(200).send(updatedNote);
+            return res.status(200).send(updatedNote);
         }
     } catch (error) {
         res.status(500).send({ message: 'Error updating note', error: error.toString() });
@@ -73,14 +84,15 @@ router.put('/:id', async (req, res) => {
 
 // Delete note(s) by ids
 router.delete('/', async (req, res) => {
-    const uuidsList = req.body.ids;
+    const uuidsList = req.body.ids; // List of note IDs to delete
+    const userId = req.user.email; // User ID from the JWT token
     try {
         for (const id of uuidsList) {
-            await deleteNote(id);
+            await deleteNoteIfOwner(id, userId);
         }
         res.status(204).send();
     } catch (error) {
-        res.status(500).send({ message: 'Error deleting note', error: error.message });
+        res.status(500).send({ message: `Error processing your request: ${error.message}`, userId: userId });
     }
 });
 

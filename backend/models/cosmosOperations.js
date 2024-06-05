@@ -78,6 +78,16 @@ async function getNoteById(noteId) {
     return resources[0];  // Return the first item if found
 }
 
+async function getNotesByUser(userId) {
+    const container = await getContainer();
+    const querySpec = {
+        query: "SELECT * FROM c WHERE c.userId = @userId AND c.entityType = 'note'",
+        parameters: [{ name: "@userId", value: userId }]
+    };
+    const { resources } = await container.items.query(querySpec).fetchAll();
+    return resources;
+}
+
 async function updateNote(noteId, updates) {
     const container = await getContainer();
     try {
@@ -100,14 +110,19 @@ async function deleteNote(noteId) {
     }
 }
 
-async function getNotesByUser(userId) {
-    const container = await getContainer();
-    const querySpec = {
-        query: "SELECT * FROM c WHERE c.userId = @userId AND c.entityType = 'note'",
-        parameters: [{ name: "@userId", value: userId }]
-    };
-    const { resources } = await container.items.query(querySpec).fetchAll();
-    return resources;
+async function deleteNoteIfOwner(noteId, userId) {
+    const note = await getNoteById(noteId);
+    if (!note) {
+        let error = new Error(`Note not found with ID: ${noteId}`);
+        error.noteId = noteId;  // Attach noteId to the error object
+        throw error;
+    }
+    if (note.userId !== userId) {
+        let error = new Error(`Access denied for user ID: ${userId} on note ID: ${noteId}`);
+        error.noteId = noteId;  // Attach noteId to the error object
+        throw error;
+    }
+    await deleteNote(noteId);
 }
 
 module.exports = {
@@ -115,6 +130,7 @@ module.exports = {
     getUserByEmail,
     updateUser,
     deleteUser,
+    deleteNoteIfOwner,
     createNote,
     getNoteById,
     updateNote,
