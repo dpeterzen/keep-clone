@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getNotesByUser, createNote, getNoteById, updateNote, deleteNoteIfOwner } = require('../models/cosmosOperations');
+const { getNotesByUser, createNote, getNoteById, updateNote, deleteNote } = require('../models/cosmosOperations');
 const authenticateToken = require('../middleware/authenticate');
 
 router.use(authenticateToken);  // Apply authentication middleware to all note routes
@@ -82,17 +82,25 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// Delete note(s) by ids
-router.delete('/', async (req, res) => {
-    const uuidsList = req.body.ids; // List of note IDs to delete
-    const userId = req.user.email; // User ID from the JWT token
+// Delete a note
+router.delete('/:id', async (req, res) => {
     try {
-        for (const id of uuidsList) {
-            await deleteNoteIfOwner(id, userId);
+        // Retrieve the note to check existence
+        const note = await getNoteById(req.params.id);
+        if (!note) {
+            return res.status(404).send({ message: 'Note not found' });
         }
-        res.status(204).send();
+
+        // Check if the logged-in user's userId matches the note's userId
+        if (note.userId !== req.user.email) {
+            return res.status(403).send({ message: 'Access denied. You do not have permission to delete this note.' });
+        }
+
+        // If the note exists and the user is authorized, proceed to delete
+        await deleteNote(req.params.id);
+        res.status(204).send();  // No content to send back, but signify successful deletion
     } catch (error) {
-        res.status(500).send({ message: `Error processing your request: ${error.message}`, userId: userId });
+        res.status(500).send({ message: 'Error deleting note', error: error.toString() });
     }
 });
 

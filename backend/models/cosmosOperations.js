@@ -111,27 +111,11 @@ async function deleteNote(noteId) {
     }
 }
 
-async function deleteNoteIfOwner(noteId, userId) {
-    const note = await getNoteById(noteId);
-    if (!note) {
-        let error = new Error(`Note not found with ID: ${noteId}`);
-        error.noteId = noteId;  // Attach noteId to the error object
-        throw error;
-    }
-    if (note.userId !== userId) {
-        let error = new Error(`Access denied for user ID: ${userId} on note ID: ${noteId}`);
-        error.noteId = noteId;  // Attach noteId to the error object
-        throw error;
-    }
-    await deleteNote(noteId);
-}
-
 module.exports = {
     createUserIfNotExists,
     getUserByEmail,
     updateUser,
     deleteUser,
-    deleteNoteIfOwner,
     createNote,
     getNoteById,
     updateNote,
