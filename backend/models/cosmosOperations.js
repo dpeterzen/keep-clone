@@ -12,7 +12,7 @@ async function createUserIfNotExists(userData) {
 
     if (existingUsers.length > 0) {
         console.log('User already exists');
-        return;
+        return null; // Explicitly return null to indicate user already exists
     }
 
     const user = {
@@ -21,6 +21,7 @@ async function createUserIfNotExists(userData) {
         entityType: 'user'
     };
     await container.items.create(user);
+    return user; // Return the created user object
 }
 
 async function getUserByEmail(email) {
