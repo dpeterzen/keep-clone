@@ -1,5 +1,38 @@
-API endpoint testing:
 
-- test each route manually with postman
-- organize postman requests for all routes in local folder
-- ensure you receive status 200 for each
+SELECT * FROM c WHERE c.userId = "testuser2@example.com" ORDER BY c.createdAt desc
+SELECT * FROM c WHERE c.entityType = 'note'
+SELECT * FROM c WHERE c.entityType = 'user'
+
+Tomorrow TODO --> 
+Hook up copiolet
+Hook up delete route
+
+Code Review Activity:
+    Postman scripting and configuration
+
+
+
+IDEA: refactor the delete route to delete a single item, this will give us status success or status error
+for each individual item
+
+
+https://developer.mozilla.org/en-US/docs/Glossary/Idempotent
+Database atomic transaction - either all occur or none occur - create such that if it fails nothing happens
+ACID 
+
+easier approach to handle batch deleting on the front end requesting to delete multiple items
+calling delete route multiple times 
+
+It wont return multiple 500 errors, if you did one operation per delete you could get a 500 per delete
+
+
+
+
+Postman Steps to set up environment variable:
+1. go to Environments
+2. create new variable 
+3. 2 ways to set the value
+    a) Set programmatically: go to the request that will use the variable 
+        > go to Scripts > Post-response > set environment variable 
+    b) Set manually in environment variables
+4. refer to the variable using {{nameOfVariable}} 
