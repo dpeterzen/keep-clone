@@ -27,7 +27,7 @@ It wont return multiple 500 errors, if you did one operation per delete you coul
 
 
 
-
+#postman notes
 Postman Steps to set up environment variable:
 1. go to Environments
 2. create new variable 
